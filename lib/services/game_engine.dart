@@ -1,8 +1,6 @@
-import 'dart:math';
 import '../models/game_config.dart';
 import '../models/piece.dart';
 import '../models/player.dart';
-import '../models/dice.dart';
 import 'path_service.dart';
 import 'collision_service.dart';
 
@@ -84,8 +82,8 @@ class GameEngine {
     }
 
     if (farthestPiece != null) {
-      farthestPiece!.state = PieceState.hangar;
-      farthestPiece!.position = -1;
+      farthestPiece.state = PieceState.hangar;
+      farthestPiece.position = -1;
     }
   }
 

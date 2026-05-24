@@ -90,11 +90,11 @@ class _BoardPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
 
-    for (int i = 0; i < BoardGeometry.trackGrid.length; i++) {
-      final grid = BoardGeometry.trackGrid[i];
+    for (int i = 0; i < BoardGeometry.track.length; i++) {
+      final (row, col) = BoardGeometry.track[i];
       final rect = Rect.fromLTWH(
-        grid[1] * cellW + 1,
-        grid[0] * cellH + 1,
+        col * cellW + 1,
+        row * cellH + 1,
         cellW - 2,
         cellH - 2,
       );
@@ -121,18 +121,18 @@ class _BoardPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
 
-    for (var entry in BoardGeometry.homeStretchGrid.entries) {
-      final color = colorMap[entry.key]!;
-      borderPaint..color = BoardGeometry.getPlayerColor(entry.key);
+    for (var color in PlayerColor.values) {
+      final stretchColor = colorMap[color]!;
+      borderPaint..color = BoardGeometry.getPlayerColor(color);
 
-      for (var grid in entry.value) {
+      for (var (row, col) in BoardGeometry.getHomeStretchPositions(color)) {
         final rect = Rect.fromLTWH(
-          grid[1] * cellW + 1,
-          grid[0] * cellH + 1,
+          col * cellW + 1,
+          row * cellH + 1,
           cellW - 2,
           cellH - 2,
         );
-        final cellPaint = Paint()..color = color;
+        final cellPaint = Paint()..color = stretchColor;
         canvas.drawRRect(
           RRect.fromRectAndRadius(rect, const Radius.circular(4)),
           cellPaint,
@@ -154,11 +154,11 @@ class _BoardPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
 
-    for (var entry in BoardGeometry.hangarGrid.entries) {
-      for (var grid in entry.value) {
+    for (var color in PlayerColor.values) {
+      for (var (row, col) in BoardGeometry.getHangarPositions(color)) {
         final rect = Rect.fromLTWH(
-          grid[1] * cellW + 2,
-          grid[0] * cellH + 2,
+          col * cellW + 2,
+          row * cellH + 2,
           cellW - 4,
           cellH - 4,
         );
@@ -176,8 +176,8 @@ class _BoardPainter extends CustomPainter {
 
   void _drawStartPositions(Canvas canvas, Size size, double cellW, double cellH) {
     for (var entry in GameConfig.startPositions.entries) {
-      final grid = BoardGeometry.trackGrid[entry.value];
-      final center = Offset(grid[1] * cellW + cellW / 2, grid[0] * cellH + cellH / 2);
+      final (row, col) = BoardGeometry.track[entry.value];
+      final center = Offset(col * cellW + cellW / 2, row * cellH + cellH / 2);
       final paint = Paint()
         ..color = BoardGeometry.getPlayerColor(entry.key).withOpacity(0.4)
         ..style = PaintingStyle.fill;

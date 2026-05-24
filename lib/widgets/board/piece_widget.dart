@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../models/piece.dart';
-import '../../models/game_config.dart';
 import '../../utils/board_geometry.dart';
 import '../../constants/dimensions.dart';
 
@@ -20,7 +19,10 @@ class PieceWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final position = BoardGeometry.modelToPixel(piece, boardSize);
+    final (px, py) = BoardGeometry.modelToPixel(piece);
+    // 将逻辑像素坐标按 boardSize 缩放到实际渲染尺寸
+    final scale = boardSize.width / (15 * AppDimensions.cellSize);
+    final position = Offset(px * scale, py * scale);
     final color = BoardGeometry.getPlayerColor(piece.color);
     final radius = AppDimensions.pieceRadius;
 
