@@ -38,11 +38,12 @@ class GameConfig {
   };
 
   // 各家冲刺跑道入口 (公共跑道索引)
+  // 红方在第10格(索引9)进入冲刺道，黄方22，蓝方35，绿方48
   static const Map<PlayerColor, int> homeStretchEntries = {
-    PlayerColor.red: 50,
-    PlayerColor.yellow: 11,
-    PlayerColor.blue: 24,
-    PlayerColor.green: 37,
+    PlayerColor.red: 9,
+    PlayerColor.yellow: 22,
+    PlayerColor.blue: 35,
+    PlayerColor.green: 48,
   };
 
   // 玩家颜色对应的 Flutter Color
