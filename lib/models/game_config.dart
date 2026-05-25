@@ -29,8 +29,8 @@ class GameConfig {
   static const int homeStretchLength = 6;
   static const int takeOffRoll = 6;
 
-  // 各颜色起点 (公共跑道索引)
-  // 红P0 蓝P13 黄P26 绿P39
+  // 各颜色起点 (跑道索引)
+  // 红P0(6,14) 蓝P13(14,9) 黄P26(6,0) 绿P39(3,10)
   static const Map<PlayerColor, int> startPositions = {
     PlayerColor.red: 0,
     PlayerColor.blue: 13,
@@ -38,9 +38,8 @@ class GameConfig {
     PlayerColor.green: 39,
   };
 
-  // 各颜色冲刺入口 (公共跑道索引)
-  // 到达入口后，下一步进入冲刺道
-  // 红P51 蓝P12 黄P25 绿P38
+  // 各颜色冲刺入口 (跑道索引，到达后下一步进入冲刺道)
+  // 红P51(14,13) 蓝P12(14,10) 黄P25(7,0) 绿P38(3,8)
   static const Map<PlayerColor, int> homeStretchEntries = {
     PlayerColor.red: 51,
     PlayerColor.blue: 12,
