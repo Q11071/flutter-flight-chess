@@ -29,21 +29,23 @@ class GameConfig {
   static const int homeStretchLength = 6;
   static const int takeOffRoll = 6;
 
-  // 红方起点 (公共跑道索引)
+  // 各颜色起点 (公共跑道索引)
+  // 红P0 蓝P13 黄P26 绿P39
   static const Map<PlayerColor, int> startPositions = {
     PlayerColor.red: 0,
-    PlayerColor.yellow: 13,
-    PlayerColor.blue: 26,
+    PlayerColor.blue: 13,
+    PlayerColor.yellow: 26,
     PlayerColor.green: 39,
   };
 
-  // 各家冲刺跑道入口 (公共跑道索引)
-  // 红方在第10格(索引9)进入冲刺道，黄方22，蓝方35，绿方48
+  // 各颜色冲刺入口 (公共跑道索引)
+  // 到达入口后，下一步进入冲刺道
+  // 红P51 蓝P12 黄P25 绿P38
   static const Map<PlayerColor, int> homeStretchEntries = {
-    PlayerColor.red: 9,
-    PlayerColor.yellow: 22,
-    PlayerColor.blue: 35,
-    PlayerColor.green: 48,
+    PlayerColor.red: 51,
+    PlayerColor.blue: 12,
+    PlayerColor.yellow: 25,
+    PlayerColor.green: 38,
   };
 
   // 玩家颜色对应的 Flutter Color

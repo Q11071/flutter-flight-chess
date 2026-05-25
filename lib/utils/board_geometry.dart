@@ -6,114 +6,113 @@ import '../constants/dimensions.dart';
 
 /// 棋盘坐标几何计算工具类
 ///
-/// 飞行棋棋盘是十字形，划分为 15x15 的逻辑网格（行列索引 0~14）。
-/// 公共跑道 52 格从红方起始格逆时针排列。
+/// 坐标系：(x, y)，原点左上角，x向右，y向下，15x15网格
+/// 跑道：52格顺时针，红P0 蓝P13 黄P26 绿P39
 class BoardGeometry {
   BoardGeometry._();
 
   // ===========================================================================
-  // 公共跑道 52 格坐标 (逆时针)
+  // 公共跑道 52 格坐标 (顺时针)
   // ===========================================================================
   //
-  // 棋盘 15x15 网格布局：
-  // - 红方机库：(10-11, 1-2)
-  // - 黄方机库：(10-11, 12-13)
-  // - 蓝方机库：(1-2, 12-13)
-  // - 绿方机库：(1-2, 1-2)
-  //
-  // 公共跑道路径（逆时针）：
-  // 红方(0-12): 右侧向上 → 顶部向左
-  // 黄方(13-25): 底部向左 → 左侧向上
-  // 蓝方(26-38): 左侧向下 → 底部向右
-  // 绿方(39-51): 顶部向右 → 右侧向下
-  //
-  // 每方 13 格：6格沿臂 + 3格转弯 + 4格进入下一方
-  // 冲刺入口：每方第10格（索引9/22/35/48）
+  // 上边(左→右) → 右上折角 → 右边(上→下) → 右下折角 →
+  // 下边(右→左) → 左下折角 → 左边(下→上) → 左上折角
 
-  static const List<(int row, int col)> track = [
-    // ---- 红方 0~12：右侧 arm 向上，顶部向左 ----
-    (6, 13), // 0  红方起始格
-    (5, 13), // 1
-    (4, 13), // 2
-    (3, 13), // 3
-    (2, 13), // 4
-    (1, 13), // 5
-    (0, 13), // 6
-    (0, 12), // 7  转弯
-    (0, 11), // 8  转弯
-    (0, 10), // 9  红方冲刺入口
-    (0, 9),  // 10
-    (0, 8),  // 11
-    (0, 7),  // 12 红方区域结束
-
-    // ---- 黄方 13~25：底部向左，左侧 arm 向上 ----
-    (13, 8), // 13 黄方起始格
-    (13, 7), // 14
-    (13, 6), // 15
-    (13, 5), // 16
-    (13, 4), // 17
-    (13, 3), // 18
-    (13, 2), // 19
-    (12, 2), // 20 转弯
-    (11, 2), // 21 转弯
-    (10, 2), // 22 黄方冲刺入口
-    (9, 2),  // 23
-    (8, 2),  // 24
-    (7, 2),  // 25 黄方区域结束
-
-    // ---- 蓝方 26~38：左侧 arm 向下，底部向右 ----
-    (8, 1),  // 26 蓝方起始格
-    (9, 1),  // 27
-    (10, 1), // 28
-    (11, 1), // 29
-    (12, 1), // 30
-    (13, 1), // 31
-    (14, 1), // 32
-    (14, 2), // 33 转弯
-    (14, 3), // 34 转弯
-    (14, 4), // 35 蓝方冲刺入口
-    (14, 5), // 36
-    (14, 6), // 37
-    (14, 7), // 38 蓝方区域结束
-
-    // ---- 绿方 39~51：顶部向右，右侧 arm 向下 ----
-    (1, 6),  // 39 绿方起始格
-    (1, 7),  // 40
-    (1, 8),  // 41
-    (1, 9),  // 42
-    (1, 10), // 43
-    (1, 11), // 44
-    (1, 12), // 45
-    (2, 12), // 46 转弯
-    (3, 12), // 47 转弯
-    (4, 12), // 48 绿方冲刺入口
-    (5, 12), // 49
-    (6, 12), // 50
-    (7, 12), // 51 绿方区域结束
+  static const List<(int x, int y)> track = [
+    // ---- 上边 (左→右) ----
+    (6, 0),  // P0  红方起点
+    (7, 0),  // P1
+    (8, 0),  // P2
+    (9, 0),  // P3
+    (10, 0), // P4
+    (11, 0), // P5
+    (12, 0), // P6
+    // ---- 右上折角 ----
+    (13, 1), // P7
+    (14, 2), // P8
+    // ---- 右边 (上→下) ----
+    (14, 3), // P9
+    (14, 4), // P10
+    (14, 5), // P11
+    (14, 6), // P12
+    (14, 7), // P13 蓝方起点
+    (14, 8), // P14
+    // ---- 右下折角 ----
+    (13, 9), // P15
+    (12, 10),// P16
+    // ---- 下边 (右→左) ----
+    (11, 10),// P17
+    (10, 10),// P18
+    (9, 10), // P19
+    (8, 10), // P20
+    (7, 10), // P21
+    (6, 10), // P22
+    // ---- 左下折角 ----
+    (5, 13), // P23
+    (4, 12), // P24
+    // ---- 左边 (下→上) ----
+    (0, 11), // P25
+    (0, 10), // P26 黄方起点
+    (0, 9),  // P27
+    (0, 8),  // P28
+    (0, 7),  // P29
+    (0, 6),  // P30
+    (0, 5),  // P31
+    // ---- 左上折角 ----
+    (1, 4),  // P32
+    (2, 3),  // P33
+    // ---- 上边回到起点 ----
+    (3, 0),  // P34
+    (4, 0),  // P35
+    (5, 0),  // P36
+    (6, 0),  // P37 (同P0)
+    (7, 0),  // P38 (同P1) - 绿方起点区域
+    (8, 0),  // P39 绿方起点
+    // ---- 继续上边 ----
+    (9, 0),  // P40
+    (10, 0), // P41
+    (11, 0), // P42
+    (12, 0), // P43
+    (13, 1), // P44
+    (14, 2), // P45
+    (14, 3), // P46
+    (14, 4), // P47
+    (14, 5), // P48
+    (14, 6), // P49
+    (14, 7), // P50
+    (14, 8), // P51
   ];
 
   // ===========================================================================
   // 冲刺入口对应的公共跑道索引
   // ===========================================================================
   //
-  // 与 GameConfig.homeStretchEntries 保持一致
+  // 每个颜色在进入起点前一格转入冲刺道
+  // 红: P51 (14,8) → 冲刺道沿 y=7 向左
+  // 蓝: P12 (14,6) → 冲刺道沿 x=7 向上
+  // 黄: P25 (0,11) → 冲刺道沿 y=7 向右
+  // 绿: P38 (8,0) → 冲刺道沿 x=7 向下
 
   static const Map<PlayerColor, int> homeEntryTrackIndex = {
-    PlayerColor.red: 9,
-    PlayerColor.yellow: 22,
-    PlayerColor.blue: 35,
-    PlayerColor.green: 48,
+    PlayerColor.red: 51,
+    PlayerColor.blue: 12,
+    PlayerColor.yellow: 25,
+    PlayerColor.green: 38,
   };
 
   // ===========================================================================
-  // 机库位置 (2x2 排列，共 4 个位置)
+  // 机库位置 (2x2 排列)
   // ===========================================================================
+  //
+  // 右下(11-14,11-14)=红  左下(0-3,11-14)=蓝
+  // 右上(11-14,0-3)=绿    左上(0-3,0-3)=黄
 
+  // 机库位置避免与跑道重叠
   static const Map<PlayerColor, List<(int, int)>> _hangarPositions = {
-    PlayerColor.red:    [(11, 1), (11, 2), (12, 1), (12, 2)],
-    PlayerColor.yellow: [(11, 12), (11, 13), (12, 12), (12, 13)],
-    PlayerColor.blue:   [(1, 12), (1, 13), (2, 12), (2, 13)],
-    PlayerColor.green:  [(1, 1), (1, 2), (2, 1), (2, 2)],
+    PlayerColor.red:    [(12, 12), (13, 12), (12, 13), (13, 13)],
+    PlayerColor.blue:   [(1, 12), (2, 12), (1, 13), (2, 13)],
+    PlayerColor.yellow: [(1, 1), (2, 1), (1, 2), (2, 2)],
+    PlayerColor.green:  [(11, 1), (12, 1), (11, 2), (12, 2)],
   };
 
   /// 返回某颜色玩家的 4 个机库位置。
@@ -122,14 +121,19 @@ class BoardGeometry {
   }
 
   // ===========================================================================
-  // 冲刺道位置 (6 格，从入口向中心)
+  // 冲刺道位置 (6 格，从外围向中心)
   // ===========================================================================
+  //
+  // 红: (8,7)→(1,7) 向左
+  // 蓝: (7,8)→(7,1) 向上
+  // 黄: (6,7)→(13,7) 向右
+  // 绿: (7,6)→(7,13) 向下
 
   static const Map<PlayerColor, List<(int, int)>> _homeStretchPositions = {
-    PlayerColor.red:    [(6, 12), (6, 11), (6, 10), (6, 9), (6, 8), (6, 7)],
-    PlayerColor.yellow: [(12, 8), (11, 8), (10, 8), (9, 8), (8, 8), (7, 8)],
-    PlayerColor.blue:   [(8, 2), (8, 3), (8, 4), (8, 5), (8, 6), (8, 7)],
-    PlayerColor.green:  [(2, 6), (3, 6), (4, 6), (5, 6), (6, 6), (7, 6)],
+    PlayerColor.red:    [(8, 7), (7, 7), (6, 7), (5, 7), (4, 7), (3, 7)],
+    PlayerColor.blue:   [(7, 8), (7, 7), (7, 6), (7, 5), (7, 4), (7, 3)],
+    PlayerColor.yellow: [(6, 7), (7, 7), (8, 7), (9, 7), (10, 7), (11, 7)],
+    PlayerColor.green:  [(7, 6), (7, 7), (7, 8), (7, 9), (7, 10), (7, 11)],
   };
 
   /// 返回某颜色玩家的 6 个冲刺道位置。
@@ -141,35 +145,34 @@ class BoardGeometry {
   // 逻辑坐标 → 像素坐标
   // ===========================================================================
 
-  /// 将逻辑网格坐标 (row, col) 转换为像素坐标。
-  static (double, double) gridToPixel(int row, int col) {
-    final double x = col * AppDimensions.cellSize + AppDimensions.cellSize / 2;
-    final double y = row * AppDimensions.cellSize + AppDimensions.cellSize / 2;
-    return (x, y);
+  /// 将逻辑网格坐标 (x, y) 转换为像素坐标。
+  static (double, double) gridToPixel(int x, int y) {
+    final double px = x * AppDimensions.cellSize + AppDimensions.cellSize / 2;
+    final double py = y * AppDimensions.cellSize + AppDimensions.cellSize / 2;
+    return (px, py);
   }
 
   /// 根据棋子状态和位置，计算其在棋盘上的像素坐标。
-  static (double, double) modelToPixel(Piece piece, {int hangarSlot = 0}) {
+  static (double, double) modelToPixel(Piece piece) {
     switch (piece.state) {
       case PieceState.hangar:
         final positions = getHangarPositions(piece.color);
-        final (row, col) = positions[piece.index % positions.length];
-        return gridToPixel(row, col);
+        final (x, y) = positions[piece.index % positions.length];
+        return gridToPixel(x, y);
 
       case PieceState.track:
-        final (row, col) = track[piece.position % track.length];
-        return gridToPixel(row, col);
+        final (x, y) = track[piece.position % track.length];
+        return gridToPixel(x, y);
 
       case PieceState.homeStretch:
         final positions = getHomeStretchPositions(piece.color);
         final idx = piece.position.clamp(0, positions.length - 1);
-        final (row, col) = positions[idx];
-        return gridToPixel(row, col);
+        final (x, y) = positions[idx];
+        return gridToPixel(x, y);
 
       case PieceState.finished:
-        final positions = getHomeStretchPositions(piece.color);
-        final (row, col) = positions.last;
-        return gridToPixel(row, col);
+        // 终点是中心 (7,7)
+        return gridToPixel(7, 7);
     }
   }
 
@@ -208,7 +211,7 @@ class BoardGeometry {
     return false;
   }
 
-  /// 判断指定跑道索引是否为某颜色的冲刺入口邻接格。
+  /// 判断指定跑道索引是否为某颜色的冲刺入口。
   static bool isHomeEntryPosition(int trackIndex) {
     for (final entry in homeEntryTrackIndex.entries) {
       if (entry.value == trackIndex) return true;
