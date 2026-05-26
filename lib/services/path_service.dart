@@ -10,6 +10,7 @@ import '../utils/board_geometry.dart';
 /// - 到达自家冲刺入口索引时，下一步进入冲刺道
 /// - 冲刺道不能超出，超出则不能移动
 /// - 到达冲刺道第 6 格（index 5 的下一步）即为 finished
+/// - 落在相同颜色的格子上可以跳跃4格
 class PathService {
   // ===========================================================================
   // 公共 API
@@ -18,6 +19,11 @@ class PathService {
   /// 获取某颜色玩家冲刺入口的公共跑道索引。
   int getHomeEntryIndex(PlayerColor color) {
     return BoardGeometry.homeEntryTrackIndex[color]!;
+  }
+
+  /// 检查某个跑道索引是否是该颜色的颜色格（可跳跃格）
+  bool isColorCellForPlayer(int trackIndex, PlayerColor color) {
+    return BoardGeometry.isColorCell(trackIndex, color);
   }
 
   /// 判断棋子是否可以移动 [steps] 步。
@@ -37,12 +43,15 @@ class PathService {
 
     if (piece.state == PieceState.track) {
       // 在公共跑道上：模拟移动，检查进入冲刺道后是否超出
+      // 注意：需要考虑跳格
       int current = piece.position;
       PieceState state = PieceState.track;
+
       for (int i = 0; i < steps; i++) {
         if (state == PieceState.track) {
           int next = (current + 1) % GameConfig.trackLength;
           int homeEntry = getHomeEntryIndex(color);
+
           if (current == homeEntry) {
             // 当前在冲刺入口，下一步进入冲刺道
             state = PieceState.homeStretch;
@@ -58,6 +67,28 @@ class PathService {
           current = next;
         }
       }
+
+      // 检查移动完成后是否触发跳格
+      if (state == PieceState.track && isColorCellForPlayer(current, color)) {
+        // 落在颜色格上，额外跳跃4格
+        for (int j = 0; j < 4; j++) {
+          int next = (current + 1) % GameConfig.trackLength;
+          int homeEntry = getHomeEntryIndex(color);
+
+          if (current == homeEntry) {
+            state = PieceState.homeStretch;
+            current = 0;
+          } else {
+            current = next;
+          }
+        }
+
+        // 再次检查是否超出冲刺道
+        if (state == PieceState.homeStretch && current > GameConfig.homeStretchLength) {
+          return false;
+        }
+      }
+
       return true;
     }
 
@@ -86,15 +117,16 @@ class PathService {
     }
   }
 
-  /// 计算棋子移动 [steps] 步后的位置和状态。
+  /// 计算棋子移动 [steps] 步后的位置和状态（考虑跳格）。
   ///
   /// 如果移动不合法（超出冲刺道），返回 `null`。
   (int, PieceState)? getPositionAfterSteps(Piece piece, int steps) {
     if (!canMove(piece, steps, piece.color)) return null;
 
     if (piece.state == PieceState.hangar) {
-      // 起飞到起始格
-      return (GameConfig.startPositions[piece.color]!, PieceState.track);
+      // 起飞到起始格，不额外跳格
+      int startPos = GameConfig.startPositions[piece.color]!;
+      return (startPos, PieceState.track);
     }
 
     int currentPos = piece.position;
@@ -111,6 +143,23 @@ class PathService {
       final (newPos, newState) = getNextPosition(tempPiece);
       currentPos = newPos;
       if (newState != null) currentState = newState;
+    }
+
+    // 检查移动完成后是否触发跳格
+    if (currentState == PieceState.track && isColorCellForPlayer(currentPos, piece.color)) {
+      // 落在颜色格上，额外跳跃4格
+      for (int j = 0; j < 4; j++) {
+        final tempPiece = Piece(
+          id: piece.id,
+          color: piece.color,
+          index: piece.index,
+          state: currentState,
+          position: currentPos,
+        );
+        final (newPos, newState) = getNextPosition(tempPiece);
+        currentPos = newPos;
+        if (newState != null) currentState = newState;
+      }
     }
 
     return (currentPos, currentState);

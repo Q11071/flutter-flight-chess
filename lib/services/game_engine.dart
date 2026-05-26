@@ -36,13 +36,15 @@ class GameEngine {
   Future<List<Piece>> movePiece(Piece piece, int steps, List<Player> allPlayers, Function onStep) async {
     List<Piece> collidedPieces = [];
 
-    // 起飞
+    // 起飞（掷6后棋子直接放到起点，不额外跳格）
     if (piece.state == PieceState.hangar) {
       piece.state = PieceState.track;
       piece.position = GameConfig.startPositions[piece.color]!;
-      // 起飞时也可能碰撞
-      collidedPieces = _collisionService.checkCollision(piece, allPlayers);
       onStep();
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      // 检查碰撞
+      collidedPieces = _collisionService.checkCollision(piece, allPlayers);
       return collidedPieces;
     }
 
@@ -52,7 +54,19 @@ class GameEngine {
       piece.position = result.$1;
       if (result.$2 != null) piece.state = result.$2!;
       onStep();
-      await Future.delayed(const Duration(milliseconds: 200));
+      await Future.delayed(const Duration(milliseconds: 300));
+    }
+
+    // 移动完成后检查是否触发跳格
+    if (piece.state == PieceState.track && _pathService.isColorCellForPlayer(piece.position, piece.color)) {
+      // 落在颜色格上，额外跳跃4格
+      for (int j = 0; j < 4; j++) {
+        final result = _pathService.getNextPosition(piece);
+        piece.position = result.$1;
+        if (result.$2 != null) piece.state = result.$2!;
+        onStep();
+        await Future.delayed(const Duration(milliseconds: 300));
+      }
     }
 
     // 移动完成后检查碰撞

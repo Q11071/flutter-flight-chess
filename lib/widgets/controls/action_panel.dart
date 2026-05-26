@@ -49,8 +49,9 @@ class ActionPanel extends StatelessWidget {
               // 骰子
               DiceWidget(
                 value: gameState.dice.value,
+                targetValue: gameState.dice.targetValue,
                 isRolling: gameState.phase == GamePhase.rolling,
-                onRoll: gameState.phase == GamePhase.waitingForRoll
+                onRoll: gameState.phase == GamePhase.waitingForRoll && !gameState.currentPlayer.isAI
                     ? () => gameState.rollDice()
                     : null,
               ),
@@ -59,8 +60,10 @@ class ActionPanel extends StatelessWidget {
             ],
           ),
 
-          // 可移动棋子选择
-          if (gameState.phase == GamePhase.waitingForAction && gameState.movablePieces.length > 1)
+          // 可移动棋子选择（仅人类玩家显示）
+          if (gameState.phase == GamePhase.waitingForAction &&
+              gameState.movablePieces.length > 1 &&
+              !gameState.currentPlayer.isAI)
             _buildPieceSelector(),
         ],
       ),

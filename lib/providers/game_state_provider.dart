@@ -47,13 +47,21 @@ class GameStateProvider extends ChangeNotifier {
   }
 
   /// 掷骰子
-  void rollDice() {
+  void rollDice() async {
     if (phase != GamePhase.waitingForRoll) return;
 
     phase = GamePhase.rolling;
     notifyListeners();
 
-    final value = dice.roll();
+    // 开始骰子滚动动画
+    dice.startRolling();
+    notifyListeners();
+
+    // 等待滚动动画完成 (1200ms)
+    await Future.delayed(const Duration(milliseconds: 1200));
+
+    // 完成滚动，获取最终值
+    final value = dice.finishRoll();
 
     // 处理连续掷6
     if (value == 6) {
@@ -71,22 +79,38 @@ class GameStateProvider extends ChangeNotifier {
       consecutiveSixes = 0;
     }
 
+    notifyListeners();
+
+    // 等待一下让玩家看到结果
+    await Future.delayed(const Duration(milliseconds: 500));
+
     // 计算可移动棋子
     movablePieces = _engine.getMovablePieces(currentPlayer, value);
 
     if (movablePieces.isEmpty) {
       statusMessage = '${currentPlayer.name} 掷了 $value，无棋子可动';
+      await Future.delayed(const Duration(milliseconds: 800));
       _nextTurn();
     } else if (movablePieces.length == 1) {
       // 只有一个可移动，自动移动
       phase = GamePhase.waitingForAction;
       statusMessage = '${currentPlayer.name} 掷了 $value';
       notifyListeners();
+      await Future.delayed(const Duration(milliseconds: 500));
       selectPiece(movablePieces.first);
       return;
     } else {
       phase = GamePhase.waitingForAction;
-      statusMessage = '${currentPlayer.name} 掷了 $value，请选择要移动的飞机';
+      if (currentPlayer.isAI) {
+        // AI有多个选择，让AI自动选择
+        statusMessage = '${currentPlayer.name} (AI) 掷了 $value，正在思考...';
+        notifyListeners();
+        // AI选择将在延迟后处理
+        await Future.delayed(const Duration(milliseconds: 1500));
+        _aiSelectAndMove();
+      } else {
+        statusMessage = '${currentPlayer.name} 掷了 $value，请选择要移动的飞机';
+      }
     }
 
     notifyListeners();
@@ -129,6 +153,13 @@ class GameStateProvider extends ChangeNotifier {
     if (dice.isSix) {
       phase = GamePhase.waitingForRoll;
       statusMessage = '${currentPlayer.name} 掷了6，可以再掷一次！';
+
+      // 如果是AI，自动再掷
+      if (currentPlayer.isAI) {
+        notifyListeners();
+        await Future.delayed(const Duration(milliseconds: 1500));
+        rollDice();
+      }
     } else {
       _nextTurn();
     }
@@ -148,7 +179,7 @@ class GameStateProvider extends ChangeNotifier {
 
     // 如果下一个是 AI，自动执行
     if (currentPlayer.isAI && gameMode == GameMode.pvai) {
-      Future.delayed(const Duration(milliseconds: 800), () {
+      Future.delayed(const Duration(milliseconds: 1200), () {
         _aiTurn();
       });
     }
@@ -159,14 +190,16 @@ class GameStateProvider extends ChangeNotifier {
     if (phase != GamePhase.waitingForRoll) return;
 
     rollDice();
+  }
 
-    if (phase == GamePhase.waitingForAction && movablePieces.isNotEmpty) {
-      Piece? selected = _engine.aiSelectPiece(currentPlayer, dice.value, players);
-      if (selected != null) {
-        Future.delayed(const Duration(milliseconds: 500), () {
-          selectPiece(selected);
-        });
-      }
+  void _aiSelectAndMove() {
+    if (!currentPlayer.isAI) return;
+    if (phase != GamePhase.waitingForAction) return;
+    if (movablePieces.isEmpty) return;
+
+    Piece? selected = _engine.aiSelectPiece(currentPlayer, dice.value, players);
+    if (selected != null) {
+      selectPiece(selected);
     }
   }
 
